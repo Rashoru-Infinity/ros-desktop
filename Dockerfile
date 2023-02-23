@@ -1,4 +1,4 @@
-FROM rashoru/vnc-desktop:jammy-20230220
+FROM rashoru/vnc-desktop:jammy-20230224-2
 
 LABEL maintainer "rashoru-infinity <65536toaru@gmail.com>"
 ENV USERNAME=ubuntu
@@ -43,9 +43,9 @@ RUN apt-get update \
 USER $USERNAME
 RUN mkdir -p $HOME/ros2_humble \
     && cd $HOME/ros2_humble \
-    && curl -OL https://github.com/ros2/ros2/releases/download/release-humble-20230213/ros2-humble-20230127-linux-jammy-amd64.tar.bz2 \
-    && tar xf ./ros2-humble-20230127-linux-jammy-amd64.tar.bz2 \
-    && rm ./ros2-humble-20230127-linux-jammy-amd64.tar.bz2
+    && curl -OL https://github.com/ros2/ros2/releases/download/release-humble-20230213/ros2-humble-20230127-linux-jammy-$(dpkg --print-architecture).tar.bz2 \
+    && tar xf ./ros2-humble-20230127-linux-jammy-$(dpkg --print-architecture).tar.bz2 \
+    && rm ./ros2-humble-20230127-linux-jammy-$(dpkg --print-architecture).tar.bz2
 
 WORKDIR /home/$USERNAME/ros2_humble
 USER root
