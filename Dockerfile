@@ -4,6 +4,7 @@ LABEL maintainer "rashoru-infinity <65536toaru@gmail.com>"
 ENV USERNAME=ubuntu
 ENV GROUPNAME=ubuntu
 ENV PASSWORD=ubuntu
+ENV ROS_DISTRO=humble
 
 # setup locale
 RUN apt-get update \
@@ -41,22 +42,23 @@ RUN apt-get update \
     /var/cache/apt/archives/*
 
 USER $USERNAME
-RUN mkdir -p $HOME/ros2_humble \
-    && cd $HOME/ros2_humble \
-    && curl -OL https://github.com/ros2/ros2/releases/download/release-humble-20230213/ros2-humble-20230127-linux-jammy-$(dpkg --print-architecture).tar.bz2 \
-    && tar xf ./ros2-humble-20230127-linux-jammy-$(dpkg --print-architecture).tar.bz2 \
-    && rm ./ros2-humble-20230127-linux-jammy-$(dpkg --print-architecture).tar.bz2
+RUN mkdir -p $HOME/ros2_$ROS_DISTRO \
+    && cd $HOME/ros2_$ROS_DISTRO \
+    && curl -OL https://github.com/ros2/ros2/releases/download/release-$ROS_DISTRO-20230213/ros2-$ROS_DISTRO-20230127-linux-jammy-$(dpkg --print-architecture).tar.bz2 \
+    && tar xf ./ros2-$ROS_DISTRO-20230127-linux-jammy-$(dpkg --print-architecture).tar.bz2 \
+    && rm ./ros2-$ROS_DISTRO-20230127-linux-jammy-$(dpkg --print-architecture).tar.bz2
 
-WORKDIR /home/$USERNAME/ros2_humble
+WORKDIR /home/$USERNAME/ros2_$ROS_DISTRO
 USER root
-ENV ROS_DISTRO=humble
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-rosdep \
     ros-dev-tools \
     && rosdep init \
     && gosu $USERNAME rosdep update \
-    && gosu $USERNAME rosdep install --from-paths /home/$USERNAME/ros2_humble/ros2-linux/share --ignore-src -y --skip-keys "cyclonedds fastcdr fastrtps rti-connext-dds-6.0.1 urdfdom_headers" \
+    && gosu $USERNAME rosdep install --from-paths /home/$USERNAME/ros2_$ROS_DISTRO/ros2-linux/share --ignore-src -y --skip-keys \
+    "cyclonedds fastcdr fastrtps rti-connext-dds-6.0.1 urdfdom_headers" \
     && rm -rf /var/lib/apt/lists/* \
     /var/cache/apt/archives/* \
-    /home/$USERNAME/.ros/rosdep/sources.cache/*
+    /home/$USERNAME/.ros/rosdep/sources.cache/* \
+    && sed -i -z 's@# start vnc server\n@echo "source /home/\$USERNAME/ros2_humble/ros2-linux/setup.bash" >> /home/\$USERNAME/.bashrc\n# start vnc server\n@' /start.sh
 WORKDIR /
